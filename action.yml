@@ -1,0 +1,15 @@
+name: 'Events parsing'
+description: 'Collects upcoming events from Meetup, Luma and Eventbrite pages, plus custom ones, into a single JSON file'
+inputs:
+  sources:
+    description: 'JSON file listing the pages to scrape: {"meetup": [...], "luma": [...], "eventbrite": [...], "custom": [...]}'
+    default: 'sources.json'
+  output:
+    description: 'Where to write the events JSON'
+    default: 'data/events.json'
+  timezone:
+    description: 'Timezone deciding whether an event spans more than one day'
+    default: 'Europe/Rome'
+runs:
+  using: 'node24'
+  main: 'index.js'
