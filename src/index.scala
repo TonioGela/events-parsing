@@ -23,6 +23,7 @@ trait Response extends js.Object:
 object fs extends js.Object:
   def readFileSync(path: String, encoding: String): String = js.native
   def writeFileSync(path: String, data: String): Unit = js.native
+  def appendFileSync(path: String, data: String): Unit = js.native
   def mkdirSync(path: String, options: js.Object): Unit = js.native
 
 @js.native @JSImport("node:path", JSImport.Namespace)
@@ -62,6 +63,10 @@ object index:
     val sourcesPath = input("sources", "sources.json")
     val output = input("output", "data/events.json")
     val tz = input("timezone", "Europe/Rome")
+    val cities = input("cities", "Milano,Milan")
+      .split(",")
+      .map(_.trim.toLowerCase)
+      .toSet
 
     val events = for
       sources <- Future.fromTry(
@@ -77,7 +82,26 @@ object index:
     yield normalize(scraped.flatten ++ sources.custom, tz, js.Date.now())
 
     events.onComplete {
-      case Success(events) =>
+      case Success(upcoming) =>
+        // Events without a city (online, custom) are kept.
+        val events =
+          upcoming.filter(
+            _.city.filter(_.nonEmpty).forall(c => cities(c.toLowerCase))
+          )
+        Node.process.env.GITHUB_STEP_SUMMARY
+          .asInstanceOf[js.UndefOr[String]]
+          .foreach(
+            fs.appendFileSync(
+              _,
+              upcoming
+                .flatMap(_.city)
+                .filter(_.nonEmpty)
+                .distinct
+                .sorted
+                .map(c => s"- $c\n")
+                .mkString("### Cities of upcoming events\n\n", "", "\n")
+            )
+          )
         fs.mkdirSync(path.dirname(output), js.Dynamic.literal(recursive = true))
         fs.writeFileSync(
           output,

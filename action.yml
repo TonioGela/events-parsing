@@ -10,6 +10,9 @@ inputs:
   timezone:
     description: 'Timezone deciding whether an event spans more than one day'
     default: 'Europe/Rome'
+  cities:
+    description: 'Comma-separated venue cities to keep, case-insensitive. Events without a city, like online and custom ones, are always kept'
+    default: 'Milano,Milan'
 runs:
   using: 'node24'
   main: 'index.js'

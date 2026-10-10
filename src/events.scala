@@ -9,7 +9,8 @@ case class Event(
     date: String,
     dateTo: Option[String],
     title: String,
-    venue: String
+    venue: String,
+    city: Option[String] = None
 ) derives Codec.AsObject
 
 case class Sources(
@@ -56,14 +57,24 @@ def meetup(html: String): Either[Throwable, List[Event]] = for
         .downField("venue")
         .get[String]("__ref")
         .flatMap(ref => state(ref).toRight(Exception(ref)))
-        .flatMap(_.hcursor.get[String]("name"))
+        .map(_.hcursor)
       (
         e.get[String]("eventUrl"),
         e.get[String]("dateTime"),
         e.get[Option[String]]("endTime"),
         e.get[String]("title")
       )
-        .mapN(Event(group, _, _, _, _, venue.getOrElse("")))
+        .mapN(
+          Event(
+            group,
+            _,
+            _,
+            _,
+            _,
+            venue.flatMap(_.get[String]("name")).getOrElse(""),
+            venue.flatMap(_.get[String]("city")).toOption
+          )
+        )
     }
 yield events
 
@@ -74,7 +85,7 @@ def luma(html: String): Either[Throwable, List[Event]] = for
   entries <- data.downField("upcoming").get[List[Json]]("entries")
   events <- entries.traverse { entry =>
     val e = entry.hcursor.downField("event")
-    val venue = e.downField("geo_address_info").get[String]("address")
+    val geo = e.downField("geo_address_info")
     (
       e.get[String]("url"),
       e.get[String]("start_at"),
@@ -88,7 +99,8 @@ def luma(html: String): Either[Throwable, List[Event]] = for
           start,
           end,
           title,
-          venue.getOrElse("")
+          geo.get[String]("address").getOrElse(""),
+          geo.get[String]("city").toOption
         )
       )
   }
@@ -119,7 +131,18 @@ def eventbrite(html: String): Either[Throwable, List[Event]] = for
         end <- at("end_date", "end_time")
         url <- e.get[String]("url")
         title <- e.get[String]("name")
-      yield Event(organizer, url, start, Some(end), title, venue.getOrElse(""))
+      yield Event(
+        organizer,
+        url,
+        start,
+        Some(end),
+        title,
+        venue.getOrElse(""),
+        e.downField("primary_venue")
+          .downField("address")
+          .get[String]("city")
+          .toOption
+      )
     }
 yield events
 

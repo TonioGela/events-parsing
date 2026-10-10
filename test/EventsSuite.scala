@@ -17,7 +17,8 @@ class EventsSuite extends munit.FunSuite:
             "2026-10-17T09:30:00+02:00",
             Some("2026-10-17T17:30:00+02:00"),
             "Nix Unconference #12",
-            "rev.ng Labs"
+            "rev.ng Labs",
+            Some("Milan")
           )
         )
       )
@@ -35,7 +36,8 @@ class EventsSuite extends munit.FunSuite:
             "2026-10-22T16:30:00.000Z",
             Some("2026-10-22T19:30:00.000Z"),
             "Milan | Claude Code for Developers",
-            "Via Vittor Pisani, 19"
+            "Via Vittor Pisani, 19",
+            Some("Milano")
           )
         )
       )
@@ -55,7 +57,8 @@ class EventsSuite extends munit.FunSuite:
             "2026-10-19T08:00:00.000Z",
             Some("2026-10-19T08:00:00.000Z"),
             "Contest Assintel: presenta la tua innovazione",
-            "Corso Venezia, 47"
+            "Corso Venezia, 47",
+            Some("Milano")
           )
         )
       )
@@ -83,7 +86,9 @@ class EventsSuite extends munit.FunSuite:
   def at(date: String, dateTo: Option[String] = None) =
     Event("g", "u", date, dateTo, date, "v")
 
-  test("normalize drops events ended before today, keeps today's, sorts by start") {
+  test(
+    "normalize drops events ended before today, keeps today's, sorts by start"
+  ) {
     val past = at("2026-10-01T18:00:00+02:00")
     // now is 02:00 on Oct 10 in Rome.
     val lastNight = at("2026-10-09T23:30:00+02:00")

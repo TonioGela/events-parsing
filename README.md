@@ -8,6 +8,7 @@ A GitHub Action, written in Scala.js, that collects upcoming events from Meetup 
     sources: sources.json    # default
     output: data/events.json # default
     timezone: Europe/Rome    # default
+    cities: Milano,Milan     # default
 ```
 
 `sources.json` structure, every key is optional:
@@ -30,7 +31,7 @@ A GitHub Action, written in Scala.js, that collects upcoming events from Meetup 
 }
 ```
 
-Each output event has `meetupName`, `url`, `date`, `title`, `venue`, and `dateTo` when it spans more than one day. Events that ended before today (in `timezone`) are dropped, and the rest are sorted by date.
+Each output event has `meetupName`, `url`, `date`, `title`, `venue`, plus `dateTo` when it spans more than one day and `city` when the venue has one. Only events in one of `cities` (case-insensitive) are kept, and events without a city, like online and custom ones, always pass; the job summary lists the cities of all upcoming events, so you can see what the filter is dropping. Events that ended before today (in `timezone`) are dropped, and the rest are sorted by date.
 
 It runs locally too: `node index.js` reads `sources.json` and writes `data/events.json`, and the same `INPUT_SOURCES`, `INPUT_OUTPUT` and `INPUT_TIMEZONE` environment variables override them.
 
