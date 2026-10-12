@@ -84,7 +84,7 @@ class EventsSuite extends munit.FunSuite:
 
   val now = js.Date.parse("2026-10-10T00:00:00Z")
   def at(date: String, dateTo: Option[String] = None) =
-    Event("g", "u", date, dateTo, date, "v")
+    Event("g", s"$date$dateTo", date, dateTo, date, "v")
 
   test(
     "normalize drops events ended before today, keeps today's, sorts by start"
@@ -120,6 +120,14 @@ class EventsSuite extends munit.FunSuite:
       normalize(List(sameDay, crossesMidnightInRome), "Europe/Rome", now)
         .map(_.dateTo),
       List(None, Some("2026-10-20T23:30:00Z"))
+    )
+  }
+
+  test("normalize keeps only the first event for each url") {
+    val e = at("2026-10-20T18:00:00+02:00")
+    assertEquals(
+      normalize(List(e, e.copy(title = "dup")), "Europe/Rome", now),
+      List(e)
     )
   }
 

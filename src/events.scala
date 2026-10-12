@@ -164,6 +164,8 @@ private def localDay(iso: String, tz: String): String =
 def normalize(events: List[Event], tz: String, now: Double): List[Event] =
   val today = localDateTime(now, tz).take(10)
   events
+    // The url embeds each platform's event id, and custom events have nothing else.
+    .distinctBy(_.url)
     .filter { e =>
       val end = e.dateTo.getOrElse(e.date)
       !js.Date.parse(end).isNaN && localDay(end, tz) >= today
