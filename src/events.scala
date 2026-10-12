@@ -59,7 +59,7 @@ def meetup(html: String): Either[Throwable, List[Event]] = for
         .flatMap(ref => state(ref).toRight(Exception(ref)))
         .map(_.hcursor)
       (
-        e.get[String]("eventUrl"),
+        e.get[String]("eventUrl").map(meetupUrl),
         e.get[String]("dateTime"),
         e.get[Option[String]]("endTime"),
         e.get[String]("title")
@@ -145,6 +145,11 @@ def eventbrite(html: String): Either[Throwable, List[Event]] = for
       )
     }
 yield events
+
+// Group pages fetched with a locale (/it-IT/...) return event urls with it,
+// so a co-hosted event would otherwise get two urls and dodge distinctBy.
+def meetupUrl(url: String): String =
+  url.replaceFirst("(?i)(meetup\\.com/)[a-z]{2}-[a-z]{2}/", "$1")
 
 def toUtc(local: String, tz: String): String =
   val guess = js.Date.parse(s"${local}Z")

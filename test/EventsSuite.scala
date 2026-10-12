@@ -131,6 +131,15 @@ class EventsSuite extends munit.FunSuite:
     )
   }
 
+  test("meetupUrl drops the locale segment") {
+    val url = "https://www.meetup.com/master-the-vibe-milan/events/315691552/"
+    assertEquals(
+      meetupUrl("https://www.meetup.com/it-IT/master-the-vibe-milan/events/315691552/"),
+      url
+    )
+    assertEquals(meetupUrl(url), url)
+  }
+
   test(
     "sources: every key is optional, custom events have an optional dateTo"
   ) {
